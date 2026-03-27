@@ -349,6 +349,25 @@ socket.on("gameClear",()=>{
   gameStarted = false;
 });
 
+// 서버 재시작/재연결 시 stale 강아지 상태 초기화
+socket.on("connect", () => {
+  Object.keys(serverDogs).forEach(id => {
+    const dog = serverDogs[id];
+    if(dog) {
+      scene.remove(dog);
+      dog.children.forEach(c => {
+        if(c.geometry) c.geometry.dispose();
+        if(c.material) c.material.dispose();
+      });
+    }
+    delete serverDogs[id];
+    delete dogHp[id];
+  });
+  if(gameStarted) {
+    socket.emit("join", { nickname });
+  }
+});
+
 // 🔥 수정된 playerDead
 socket.on("playerDead",(data)=>{
 
@@ -576,7 +595,7 @@ function animate(){
 
     // 강아지 충돌
     for(const [id, dog] of Object.entries(serverDogs)){
-      if(dogHp[id] <= 0) continue; // already dead, awaiting removeDog
+      if(!(dogHp[id] > 0)) continue; // skip dead or NaN/undefined HP dogs
       if(p.mesh.position.distanceTo(dog.position) < 1.5 * dogScale){
         dogHp[id]--;
         updateDogHpBar(id);
