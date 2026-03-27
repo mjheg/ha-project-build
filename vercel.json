@@ -1,0 +1,6 @@
+{
+  "framework": null,
+  "buildCommand": "",
+  "outputDirectory": "leo_fps_game",
+  "installCommand": "echo skip"
+}
