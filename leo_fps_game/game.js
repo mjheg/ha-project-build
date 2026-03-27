@@ -21,6 +21,7 @@ function showHitmarker(){
 
 let selectedCharacter = 1;
 let shakeTime = 0;
+let revivalTimer = null;
 
 let nickname = "";
 let gameStarted = false;
@@ -342,6 +343,7 @@ socket.on("gameState",(state)=>{
 });
 
 socket.on("gameClear",()=>{
+  clearTimeout(revivalTimer);  // ← 추가
   const clearUI = document.getElementById("clearUI");
   if(clearUI) clearUI.style.display = "flex";
   gameStarted = false;
@@ -462,7 +464,7 @@ function animate(){
   if(move.d) controls.moveRight(0.2);
 
   // 플레이어 벽 충돌 (AABB)
-  const playerSphere = new THREE.Sphere(camera.position, 1);
+  const playerSphere = new THREE.Sphere(camera.position.clone(), 1);
   for(const box of wallBoxes){
     if(box.intersectsSphere(playerSphere)){
       camera.position.x = prevX;
@@ -511,7 +513,7 @@ function animate(){
     }
     if(!dogBlocked) dog.position.add(step);
 
-    if(dist < 2 && health > 0){
+    if(dist < 2 * dogScale && health > 0){
 
       health -= 0.1;
 
@@ -531,7 +533,7 @@ function animate(){
 
         gameStarted = false;
 
-        setTimeout(()=>{
+        revivalTimer = setTimeout(()=>{
 
           if(deadUI){
             deadUI.style.display = "none";
@@ -575,7 +577,7 @@ function animate(){
     // 강아지 충돌
     for(const [id, dog] of Object.entries(serverDogs)){
       if(dogHp[id] <= 0) continue; // already dead, awaiting removeDog
-      if(p.mesh.position.distanceTo(dog.position) < 1.5){
+      if(p.mesh.position.distanceTo(dog.position) < 1.5 * dogScale){
         dogHp[id]--;
         updateDogHpBar(id);
         if(dogHp[id] <= 0){
