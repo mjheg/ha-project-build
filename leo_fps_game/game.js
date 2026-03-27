@@ -51,12 +51,14 @@ function updateDogHpBar(id){
   fillBar.position.x = ratio - 1; // 왼쪽 기준으로 줄어들게
 }
 
+let escalationTimer = null;
 function showEscalationMsg(text){
   const el = document.getElementById("escalationMsg");
   if(!el) return;
   el.innerText = text;
   el.style.opacity = 1;
-  setTimeout(()=>{ el.style.opacity = 0; }, 2000);
+  clearTimeout(escalationTimer);
+  escalationTimer = setTimeout(()=>{ el.style.opacity = 0; }, 2000);
 }
 
 let velocityY = 0;
@@ -311,6 +313,7 @@ socket.on("removePlayer",(id)=>{
 });
 
 socket.on("mapLayout",(layout)=>{
+  if(walls.length > 0) return; // 이미 벽이 생성됐으면 무시
   layout.forEach(w => createWall(w.x, w.z));
 });
 
