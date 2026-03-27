@@ -89,8 +89,8 @@ io.on("connection", (socket) => {
 
     totalKills++;
 
-    if(totalKills === 30)  dogScale = 2.0;
-    if(totalKills === 90)  dogSpeed = 2.5;
+    if(totalKills >= 30 && dogScale < 2.0)  dogScale = 2.0;
+    if(totalKills >= 90 && dogSpeed < 2.5)  dogSpeed = 2.5;
     if(totalKills >= 160)  gameCleared = true;
 
     io.emit("gameState", getGameState());
@@ -106,6 +106,7 @@ io.on("connection", (socket) => {
 
 function spawnDog(){
   if(gameCleared) return;
+  if(Object.keys(dogs).length >= 20) return; // 최대 20마리 제한
   const id = "dog_" + dogId++;
   dogs[id] = {
     id,
