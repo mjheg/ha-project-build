@@ -1,0 +1,12 @@
+{
+  "name": "ha-project-build",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node multi_play_server/server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.5"
+  }
+}
