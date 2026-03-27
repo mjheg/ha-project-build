@@ -283,6 +283,7 @@ socket.on("spawnDog",(data)=>{
   group.add(fillBar);
 
   group.userData.fillBar = fillBar;
+  group.scale.setScalar(dogScale);
   group.position.set(data.x, 2, data.z);
 
   scene.add(group);
@@ -451,10 +452,22 @@ function animate(){
     return;
   }
 
+  const prevX = camera.position.x;
+  const prevZ = camera.position.z;
   if(move.w) controls.moveForward(0.2);
   if(move.s) controls.moveForward(-0.2);
   if(move.a) controls.moveRight(-0.2);
   if(move.d) controls.moveRight(0.2);
+
+  // 플레이어 벽 충돌 (AABB)
+  const playerSphere = new THREE.Sphere(camera.position.clone(), 1);
+  for(const wall of walls){
+    if(new THREE.Box3().setFromObject(wall).intersectsSphere(playerSphere)){
+      camera.position.x = prevX;
+      camera.position.z = prevZ;
+      break;
+    }
+  }
 
   velocityY -= 0.01;
   camera.position.y += velocityY;
@@ -484,7 +497,17 @@ function animate(){
       0,
       camera.position.z - dog.position.z
     ).normalize();
-    dog.position.add(dir.multiplyScalar(0.05));
+    const step = dir.clone().multiplyScalar(0.05 * dogSpeed);
+    const nextDogPos = dog.position.clone().add(step);
+    const dogSphere = new THREE.Sphere(nextDogPos, 1.5);
+    let dogBlocked = false;
+    for(const wall of walls){
+      if(new THREE.Box3().setFromObject(wall).intersectsSphere(dogSphere)){
+        dogBlocked = true;
+        break;
+      }
+    }
+    if(!dogBlocked) dog.position.add(step);
 
     if(dist < 2 && health > 0){
 
