@@ -27,6 +27,10 @@ let gameStarted = false;
 
 let health = 100;
 let kills = 0;
+let dogScale = 1.0;
+let dogSpeed = 1.0;
+let prevDogScale = 1.0;
+let prevDogSpeed = 1.0;
 
 const otherPlayers = {};
 const enemies = [];
@@ -45,6 +49,14 @@ function updateDogHpBar(id){
   const ratio = Math.max(0, dogHp[id] / 3);
   fillBar.scale.x = ratio;
   fillBar.position.x = ratio - 1; // 왼쪽 기준으로 줄어들게
+}
+
+function showEscalationMsg(text){
+  const el = document.getElementById("escalationMsg");
+  if(!el) return;
+  el.innerText = text;
+  el.style.opacity = 1;
+  setTimeout(()=>{ el.style.opacity = 0; }, 2000);
 }
 
 let velocityY = 0;
@@ -156,9 +168,7 @@ function createWall(x,z){
   walls.push(wall);
 }
 
-for(let i=0;i<6;i++){
-  createWall((Math.random()-0.5)*80,(Math.random()-0.5)*80);
-}
+// 벽은 서버 mapLayout 이벤트로 생성됨
 
 // =======================
 // 🐶 강아지
@@ -298,6 +308,37 @@ socket.on("removePlayer",(id)=>{
     scene.remove(otherPlayers[id]);
     delete otherPlayers[id];
   }
+});
+
+socket.on("mapLayout",(layout)=>{
+  layout.forEach(w => createWall(w.x, w.z));
+});
+
+socket.on("gameState",(state)=>{
+  const scaleChanged = state.dogScale > prevDogScale;
+  const speedChanged = state.dogSpeed > prevDogSpeed;
+
+  dogScale = state.dogScale;
+  dogSpeed = state.dogSpeed;
+  prevDogScale = state.dogScale;
+  prevDogSpeed = state.dogSpeed;
+
+  const el = document.getElementById("totalKills");
+  if(el) el.innerText = "총 킬: " + state.totalKills + " / 160";
+
+  // 이미 스폰된 강아지에도 새 스케일 적용
+  Object.values(serverDogs).forEach(dog => {
+    dog.scale.setScalar(dogScale);
+  });
+
+  if(scaleChanged) showEscalationMsg("강아지가 커졌다!");
+  if(speedChanged) showEscalationMsg("강아지가 빨라졌다!");
+});
+
+socket.on("gameClear",()=>{
+  const clearUI = document.getElementById("clearUI");
+  if(clearUI) clearUI.style.display = "flex";
+  gameStarted = false;
 });
 
 // 🔥 수정된 playerDead
