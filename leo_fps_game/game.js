@@ -35,6 +35,7 @@ let prevDogSpeed = 1.0;
 const otherPlayers = {};
 const enemies = [];
 const walls = [];
+const wallBoxes = []; // precomputed Box3 for each wall (index matches walls[])
 const serverDogs = {};
 const dogHp = {}; // tracks remaining HP per dog id
 const projectiles = []; // { mesh, velocity, dist }
@@ -168,6 +169,7 @@ function createWall(x,z){
   wall.position.set(x,2.5,z);
   scene.add(wall);
   walls.push(wall);
+  wallBoxes.push(new THREE.Box3().setFromObject(wall));
 }
 
 // 벽은 서버 mapLayout 이벤트로 생성됨
@@ -460,9 +462,9 @@ function animate(){
   if(move.d) controls.moveRight(0.2);
 
   // 플레이어 벽 충돌 (AABB)
-  const playerSphere = new THREE.Sphere(camera.position.clone(), 1);
-  for(const wall of walls){
-    if(new THREE.Box3().setFromObject(wall).intersectsSphere(playerSphere)){
+  const playerSphere = new THREE.Sphere(camera.position, 1);
+  for(const box of wallBoxes){
+    if(box.intersectsSphere(playerSphere)){
       camera.position.x = prevX;
       camera.position.z = prevZ;
       break;
@@ -501,8 +503,8 @@ function animate(){
     const nextDogPos = dog.position.clone().add(step);
     const dogSphere = new THREE.Sphere(nextDogPos, 1.5);
     let dogBlocked = false;
-    for(const wall of walls){
-      if(new THREE.Box3().setFromObject(wall).intersectsSphere(dogSphere)){
+    for(const box of wallBoxes){
+      if(box.intersectsSphere(dogSphere)){
         dogBlocked = true;
         break;
       }
