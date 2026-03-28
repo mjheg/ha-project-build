@@ -114,7 +114,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 
     controls.lock();
-    dogSound.play();
+    dogSound.play().catch(() => {});
 
     gameStarted = true;
   });
@@ -441,7 +441,7 @@ document.addEventListener("mousedown",()=>{
   if(!gameStarted) return;
 
   gunSound.currentTime = 0;
-  gunSound.play();
+  gunSound.play().catch(() => {});
 
   // 반동 애니메이션
   camera.rotation.x -= 0.05;
