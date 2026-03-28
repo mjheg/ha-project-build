@@ -79,11 +79,15 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("killDog", (data) => {
-    if(!dogs[data.id]) return;
+  socket.on("killDog", (data, ack) => {
+    if(!dogs[data.id]) {
+      if(typeof ack === 'function') ack("rejected:not_found keys=" + Object.keys(dogs).join(","));
+      return;
+    }
 
     delete dogs[data.id];
     io.emit("removeDog", data.id);
+    if(typeof ack === 'function') ack("ok");
 
     if(gameCleared) return;
 

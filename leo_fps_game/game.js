@@ -604,7 +604,9 @@ function animate(){
         dogHp[id]--;
         updateDogHpBar(id);
         if(dogHp[id] <= 0){
-          socket.emit("killDog",{id});
+          socket.emit("killDog", {id}, (ack) => {
+            console.log("[killDog]", id, "→", ack);
+          });
         }
         showHitmarker();
         hit = true;
