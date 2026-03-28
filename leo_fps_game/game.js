@@ -605,9 +605,18 @@ function animate(){
         dogHp[id]--;
         updateDogHpBar(id);
         if(dogHp[id] <= 0){
-          socket.emit("killDog", {id}, (ack) => {
-            console.log("[killDog]", id, "→", ack);
-          });
+          // 즉시 로컬에서 제거 (서버 응답 기다리지 않음)
+          const deadDog = serverDogs[id];
+          if(deadDog){
+            scene.remove(deadDog);
+            deadDog.children.forEach(c => {
+              if(c.geometry) c.geometry.dispose();
+              if(c.material) c.material.dispose();
+            });
+          }
+          delete serverDogs[id];
+          delete dogHp[id];
+          socket.emit("killDog", {id});
         }
         showHitmarker();
         hit = true;
