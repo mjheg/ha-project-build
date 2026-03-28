@@ -124,6 +124,6 @@ function spawnDog(){
   io.emit("spawnDog", dogs[id]);
 }
 
-setInterval(spawnDog, 1000);
+setInterval(spawnDog, 500);
 
 server.listen(process.env.PORT || 3000);
