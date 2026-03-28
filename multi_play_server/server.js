@@ -28,6 +28,10 @@ function getGameState(){
   return { totalKills, dogScale, dogSpeed, gameCleared };
 }
 
+app.get("/", (req, res) => {
+  res.json({ version: 3, dogs: Object.keys(dogs).length, totalKills });
+});
+
 io.on("connection", (socket) => {
 
   socket.on("join", (data) => {
