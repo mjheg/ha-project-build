@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "scripts": {
     "postinstall": "npm install --prefix multi_play_server",
-    "start": "node multi_play_server/server.js"
+    "start": "cd multi_play_server && node server.js"
   }
 }
