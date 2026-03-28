@@ -513,7 +513,9 @@ function animate(){
 
     dog.lookAt(camera.position);
 
-    const dist = camera.position.distanceTo(dog.position);
+    const dx = camera.position.x - dog.position.x;
+    const dz = camera.position.z - dog.position.z;
+    const dist = Math.sqrt(dx*dx + dz*dz);
 
     const dir = new THREE.Vector3(
       camera.position.x - dog.position.x,
@@ -596,7 +598,9 @@ function animate(){
     // 강아지 충돌
     for(const [id, dog] of Object.entries(serverDogs)){
       if(!(dogHp[id] > 0)) continue; // skip dead or NaN/undefined HP dogs
-      if(p.mesh.position.distanceTo(dog.position) < 1.5 * dogScale){
+      const bDx = p.mesh.position.x - dog.position.x;
+      const bDz = p.mesh.position.z - dog.position.z;
+      if(Math.sqrt(bDx*bDx + bDz*bDz) < 1.5 * dogScale){
         dogHp[id]--;
         updateDogHpBar(id);
         if(dogHp[id] <= 0){
