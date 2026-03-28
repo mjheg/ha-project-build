@@ -619,6 +619,11 @@ function animate(){
           // 킬수 낙관적 업데이트 (서버 gameState로 덮어써짐)
           kills++;
           document.getElementById("score").innerText = "Kills: " + kills;
+          const tkEl = document.getElementById("totalKills");
+          if(tkEl){
+            const cur = parseInt(tkEl.innerText.match(/(\d+)/)?.[1]) || 0;
+            tkEl.innerText = "총 킬: " + (cur + 1) + " / 160";
+          }
           socket.emit("killDog", {id});
         }
         showHitmarker();
