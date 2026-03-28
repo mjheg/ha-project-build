@@ -616,6 +616,9 @@ function animate(){
           }
           delete serverDogs[id];
           delete dogHp[id];
+          // 킬수 낙관적 업데이트 (서버 gameState로 덮어써짐)
+          kills++;
+          document.getElementById("score").innerText = "Kills: " + kills;
           socket.emit("killDog", {id});
         }
         showHitmarker();
