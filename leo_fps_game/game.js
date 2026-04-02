@@ -523,6 +523,8 @@ let lastFireTime = 0;
 const AUTO_INTERVAL = 55; // ms — Micro Uzi ~1100 RPM
 let fireModeTimer = null;
 
+let recoilOffset = 0; // 현재 반동 오프셋 (animate 루프에서 관리)
+
 
 function showFireMode(){
   const el = document.getElementById("fireModeMsg");
@@ -537,8 +539,7 @@ function fireGun(){
   gunSound.currentTime = 0;
   gunSound.play().catch(() => {});
 
-  camera.rotation.x -= 0.05;
-  setTimeout(()=>camera.rotation.x += 0.05, 100);
+  recoilOffset += 0.05; // 반동 누적 (animate 루프에서 감쇠)
 
   const dir = new THREE.Vector3();
   camera.getWorldDirection(dir);
@@ -631,6 +632,11 @@ function animate(){
 
   
   const now = Date.now();
+
+  // 반동: 이전 프레임 오프셋 제거 → 감쇠 → 재적용
+  camera.rotation.x += recoilOffset;
+  recoilOffset *= 0.75;
+  camera.rotation.x -= recoilOffset;
 
   // 연사 모드
   if(isAutoFire && mouseHeld && now - lastFireTime >= AUTO_INTERVAL){
