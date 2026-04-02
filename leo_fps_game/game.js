@@ -398,29 +398,48 @@ socket.on("playerDead",(data)=>{
     const deadUI = document.getElementById("deadUI");
     if(deadUI) deadUI.style.display = "flex";
     gameStarted = false;
-
     clearTimeout(revivalTimer);
-    revivalTimer = setTimeout(()=>{
-      if(deadUI) deadUI.style.display = "none";
-      health = 100;
-      document.getElementById("health").innerText = "HP: 100";
-      camera.position.set(0,5,0);
-      gameStarted = true;
-    }, 3000);
+    // 부활은 서버의 playerRespawn 이벤트로 처리
   }
 
-  // 죽은 플레이어 HP바 리셋
+  // 죽은 다른 플레이어 숨기기
   const p = otherPlayers[data.id];
-  if(p && p.userData.fillBar){
-    p.userData.hp = 100;
-    p.userData.fillBar.scale.x = 1;
-    p.userData.fillBar.position.x = 0;
-  }
+  if(p) p.visible = false;
 
   if(data.killer === socket.id){
     kills++;
     document.getElementById("score").innerText = "Kills: " + kills;
   }
+});
+
+socket.on("playerRespawn",(data)=>{
+
+  if(data.id === socket.id){
+    const deadUI = document.getElementById("deadUI");
+    if(deadUI) deadUI.style.display = "none";
+    health = 100;
+    document.getElementById("health").innerText = "HP: 100";
+    camera.position.set(0,5,0);
+    gameStarted = true;
+  }
+
+  // 리스폰한 다른 플레이어 다시 보이기 + HP바 리셋
+  const p = otherPlayers[data.id];
+  if(p){
+    p.visible = true;
+    p.position.set(data.x, 2, data.z);
+    if(p.userData.fillBar){
+      p.userData.hp = 100;
+      p.userData.fillBar.scale.x = 1;
+      p.userData.fillBar.position.x = 0;
+    }
+  }
+});
+
+// 강아지 피격 HP 업데이트 (서버 브로드캐스트)
+socket.on("dogHit",(data)=>{
+  dogHp[data.id] = data.hp;
+  updateDogHpBar(data.id);
 });
 
 // 🔥 수정된 playerHit (통합)
@@ -644,45 +663,22 @@ function animate(){
 
     let hit = false;
 
-    // 강아지 충돌
+    // 강아지 충돌 — 서버에 hitDog 이벤트 전송, HP 관리는 서버가 담당
     for(const [id, dog] of Object.entries(serverDogs)){
-      if(!(dogHp[id] > 0)) continue; // skip dead or NaN/undefined HP dogs
       const bDx = p.mesh.position.x - dog.position.x;
       const bDz = p.mesh.position.z - dog.position.z;
       if(Math.sqrt(bDx*bDx + bDz*bDz) < 1.5 * dogScale){
-        dogHp[id]--;
-        updateDogHpBar(id);
-        if(dogHp[id] <= 0){
-          // 즉시 로컬에서 제거 (서버 응답 기다리지 않음)
-          const deadDog = serverDogs[id];
-          if(deadDog){
-            scene.remove(deadDog);
-            deadDog.children.forEach(c => {
-              if(c.geometry) c.geometry.dispose();
-              if(c.material) c.material.dispose();
-            });
-          }
-          delete serverDogs[id];
-          delete dogHp[id];
-          // 킬수 낙관적 업데이트 (서버 gameState로 덮어써짐)
-          kills++;
-          document.getElementById("score").innerText = "Kills: " + kills;
-          const tkEl = document.getElementById("totalKills");
-          if(tkEl){
-            const cur = parseInt(tkEl.innerText.match(/(\d+)/)?.[1]) || 0;
-            tkEl.innerText = "총 킬: " + (cur + 1) + " / 160";
-          }
-          socket.emit("killDog", {id});
-        }
+        socket.emit("hitDog", { id });
         showHitmarker();
         hit = true;
         break;
       }
     }
 
-    // 플레이어 충돌
+    // 플레이어 충돌 — 죽어서 숨겨진 플레이어는 피격 제외
     if(!hit){
       for(const [id, player] of Object.entries(otherPlayers)){
+        if(!player.visible) continue;
         if(p.mesh.position.distanceTo(player.position) < 2){
           socket.emit("hit",{targetId:id});
           showHitmarker();

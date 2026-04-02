@@ -28,8 +28,22 @@ function getGameState(){
   return { totalKills, dogScale, dogSpeed, gameCleared };
 }
 
+function handleDogKill(dogId){
+  if(gameCleared) return;
+
+  totalKills++;
+
+  if(totalKills >= 30 && dogScale < 2.0)  dogScale = 2.0;
+  if(totalKills >= 90 && dogSpeed < 2.5)  dogSpeed = 2.5;
+  if(totalKills >= 160)  gameCleared = true;
+
+  io.emit("gameState", getGameState());
+
+  if(gameCleared) io.emit("gameClear", { totalKills });
+}
+
 app.get("/", (req, res) => {
-  res.json({ version: 3, dogs: Object.keys(dogs).length, totalKills });
+  res.json({ version: 4, dogs: Object.keys(dogs).length, totalKills });
 });
 
 io.on("connection", (socket) => {
@@ -40,7 +54,8 @@ io.on("connection", (socket) => {
       nickname: data.nickname,
       x: 0,
       z: 0,
-      hp: 100
+      hp: 100,
+      isDead: false
     };
 
     const others = {};
@@ -70,40 +85,42 @@ io.on("connection", (socket) => {
 
   socket.on("hit", (data) => {
     const t = players[data.targetId];
-    if(!t) return;
+    if(!t || t.isDead) return; // 죽은 플레이어는 피격 무시
+
     t.hp -= 10;
     if(t.hp < 0) t.hp = 0;
     io.emit("playerHit", { id: data.targetId, hp: t.hp });
+
     if(t.hp <= 0){
+      t.isDead = true;
       io.emit("playerDead", { id: data.targetId, killer: socket.id });
-      t.hp = 100;
-      t.x = 0;
-      t.z = 0;
-      io.emit("playerMove", { id: data.targetId, x: t.x, z: t.z });
+
+      // 3초 후 리스폰
+      setTimeout(() => {
+        if(!players[data.targetId]) return;
+        t.hp = 100;
+        t.x = 0;
+        t.z = 0;
+        t.isDead = false;
+        io.emit("playerRespawn", { id: data.targetId, x: 0, z: 0 });
+      }, 3000);
     }
   });
 
-  socket.on("killDog", (data, ack) => {
-    if(!dogs[data.id]) {
-      if(typeof ack === 'function') ack("rejected:not_found keys=" + Object.keys(dogs).join(","));
-      return;
+  // 강아지 피격 — 서버에서 HP 관리
+  socket.on("hitDog", (data) => {
+    const dog = dogs[data.id];
+    if(!dog) return;
+
+    dog.hp--;
+
+    if(dog.hp <= 0){
+      delete dogs[data.id];
+      io.emit("removeDog", data.id);
+      handleDogKill(data.id);
+    } else {
+      io.emit("dogHit", { id: data.id, hp: dog.hp });
     }
-
-    delete dogs[data.id];
-    io.emit("removeDog", data.id);
-    if(typeof ack === 'function') ack("ok");
-
-    if(gameCleared) return;
-
-    totalKills++;
-
-    if(totalKills >= 30 && dogScale < 2.0)  dogScale = 2.0;
-    if(totalKills >= 90 && dogSpeed < 2.5)  dogSpeed = 2.5;
-    if(totalKills >= 160)  gameCleared = true;
-
-    io.emit("gameState", getGameState());
-
-    if(gameCleared) io.emit("gameClear", { totalKills });
   });
 
   socket.on("disconnect", () => {
@@ -119,7 +136,8 @@ function spawnDog(){
   dogs[id] = {
     id,
     x: (Math.random()-0.5)*50,
-    z: (Math.random()-0.5)*50
+    z: (Math.random()-0.5)*50,
+    hp: 3
   };
   io.emit("spawnDog", dogs[id]);
 }
