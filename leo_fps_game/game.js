@@ -594,43 +594,7 @@ function animate(){
     const dist = Math.sqrt(dx*dx + dz*dz);
 
     // 이동은 서버가 담당 (dogPositions 이벤트로 위치 수신)
-
-    if(dist < 2 * dogScale && health > 0){
-
-      health -= 0.1;
-
-      document.getElementById("health").innerText =
-        "HP: " + Math.max(0, Math.floor(health));
-
-      if(health <= 0){
-
-        health = 0;
-        document.getElementById("health").innerText = "HP: 0";
-
-        const deadUI = document.getElementById("deadUI");
-
-        if(deadUI){
-          deadUI.style.display = "flex";
-        }
-
-        gameStarted = false;
-
-        revivalTimer = setTimeout(()=>{
-
-          if(deadUI){
-            deadUI.style.display = "none";
-          }
-
-          health = 100;
-          document.getElementById("health").innerText = "HP: 100";
-
-          camera.position.set(0,5,0);
-
-          gameStarted = true;
-
-        },3000);
-      }
-    }
+    // 피해도 서버가 담당 (tickDogDamage → playerHit 이벤트)
 
     if(dist < closest) closest = dist;
   });

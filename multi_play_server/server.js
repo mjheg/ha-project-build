@@ -175,7 +175,37 @@ function tickDogs(){
   }
 }
 
+// 강아지 근접 피해 — 100ms마다 1 HP 감소 (= 10 HP/초)
+function tickDogDamage(){
+  if(gameCleared) return;
+  Object.values(dogs).forEach(dog => {
+    Object.values(players).forEach(p => {
+      if(p.isDead) return;
+      const dx = p.x - dog.x;
+      const dz = p.z - dog.z;
+      const dist = Math.sqrt(dx*dx + dz*dz);
+      if(dist < 2 * dogScale){
+        p.hp = Math.max(0, p.hp - 1);
+        io.emit("playerHit", { id: p.id, hp: p.hp });
+        if(p.hp <= 0){
+          p.isDead = true;
+          io.emit("playerDead", { id: p.id, killer: null });
+          setTimeout(() => {
+            if(!players[p.id]) return;
+            p.hp = 100;
+            p.x = 0;
+            p.z = 0;
+            p.isDead = false;
+            io.emit("playerRespawn", { id: p.id, x: 0, z: 0 });
+          }, 3000);
+        }
+      }
+    });
+  });
+}
+
 setInterval(spawnDog, 200);
 setInterval(tickDogs, 50);
+setInterval(tickDogDamage, 100);
 
 server.listen(process.env.PORT || 3000);
