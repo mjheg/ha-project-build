@@ -131,7 +131,7 @@ io.on("connection", (socket) => {
 
 function spawnDog(){
   if(gameCleared) return;
-  if(Object.keys(dogs).length >= 20) return; // 최대 20마리 제한
+  if(Object.keys(dogs).length >= 20) return;
   const id = "dog_" + dogId++;
   dogs[id] = {
     id,
@@ -142,6 +142,40 @@ function spawnDog(){
   io.emit("spawnDog", dogs[id]);
 }
 
+// 서버에서 강아지 이동 계산 후 브로드캐스트 (50ms 틱)
+function tickDogs(){
+  if(gameCleared) return;
+  const alivePlayers = Object.values(players).filter(p => !p.isDead);
+  if(alivePlayers.length === 0) return;
+
+  const updates = [];
+
+  Object.values(dogs).forEach(dog => {
+    // 가장 가까운 플레이어를 향해 이동
+    let nearest = null;
+    let nearestDist = Infinity;
+    alivePlayers.forEach(p => {
+      const dx = p.x - dog.x;
+      const dz = p.z - dog.z;
+      const dist = Math.sqrt(dx*dx + dz*dz);
+      if(dist < nearestDist){ nearestDist = dist; nearest = p; }
+    });
+
+    if(!nearest || nearestDist < 0.1) return;
+
+    const step = 0.15 * dogSpeed; // 50ms 틱 기준 이동량
+    dog.x += ((nearest.x - dog.x) / nearestDist) * step;
+    dog.z += ((nearest.z - dog.z) / nearestDist) * step;
+
+    updates.push({ id: dog.id, x: dog.x, z: dog.z });
+  });
+
+  if(updates.length > 0){
+    io.emit("dogPositions", updates);
+  }
+}
+
 setInterval(spawnDog, 200);
+setInterval(tickDogs, 50);
 
 server.listen(process.env.PORT || 3000);

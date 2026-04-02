@@ -442,6 +442,14 @@ socket.on("dogHit",(data)=>{
   updateDogHpBar(data.id);
 });
 
+// 서버에서 계산한 강아지 위치 반영
+socket.on("dogPositions",(updates)=>{
+  updates.forEach(({ id, x, z }) => {
+    const dog = serverDogs[id];
+    if(dog) dog.position.set(x, 2, z);
+  });
+});
+
 // 🔥 수정된 playerHit (통합)
 socket.on("playerHit",(data)=>{
 
@@ -585,22 +593,7 @@ function animate(){
     const dz = camera.position.z - dog.position.z;
     const dist = Math.sqrt(dx*dx + dz*dz);
 
-    const dir = new THREE.Vector3(
-      camera.position.x - dog.position.x,
-      0,
-      camera.position.z - dog.position.z
-    ).normalize();
-    const step = dir.clone().multiplyScalar(0.05 * dogSpeed);
-    const nextDogPos = dog.position.clone().add(step);
-    const dogSphere = new THREE.Sphere(nextDogPos, 1.5);
-    let dogBlocked = false;
-    for(const box of wallBoxes){
-      if(box.intersectsSphere(dogSphere)){
-        dogBlocked = true;
-        break;
-      }
-    }
-    if(!dogBlocked) dog.position.add(step);
+    // 이동은 서버가 담당 (dogPositions 이벤트로 위치 수신)
 
     if(dist < 2 * dogScale && health > 0){
 
