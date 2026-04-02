@@ -369,6 +369,34 @@ socket.on("gameClear",()=>{
   gameStarted = false;
 });
 
+socket.on("gameReset",()=>{
+  // 클리어 UI 숨기고 게임 재시작
+  const clearUI = document.getElementById("clearUI");
+  if(clearUI) clearUI.style.display = "none";
+
+  // 로컬 강아지 전부 제거
+  Object.keys(serverDogs).forEach(id => {
+    const dog = serverDogs[id];
+    if(dog){
+      scene.remove(dog);
+      dog.children.forEach(c => {
+        if(c.geometry) c.geometry.dispose();
+        if(c.material) c.material.dispose();
+      });
+    }
+    delete serverDogs[id];
+    delete dogHp[id];
+  });
+
+  kills = 0;
+  health = 100;
+  document.getElementById("score").innerText = "Kills: 0";
+  document.getElementById("health").innerText = "HP: 100";
+  document.getElementById("totalKills").innerText = "총 킬: 0 / 160";
+  camera.position.set(0, 5, 0);
+  gameStarted = true;
+});
+
 // 서버 재시작/재연결 시 stale 강아지 상태 초기화
 socket.on("connect", () => {
   Object.keys(serverDogs).forEach(id => {

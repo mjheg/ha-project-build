@@ -39,7 +39,18 @@ function handleDogKill(dogId){
 
   io.emit("gameState", getGameState());
 
-  if(gameCleared) io.emit("gameClear", { totalKills });
+  if(gameCleared){
+    io.emit("gameClear", { totalKills });
+    // 10초 후 게임 전체 초기화
+    setTimeout(() => {
+      totalKills = 0;
+      dogScale = 1.0;
+      dogSpeed = 1.0;
+      gameCleared = false;
+      Object.keys(dogs).forEach(id => delete dogs[id]);
+      io.emit("gameReset");
+    }, 10000);
+  }
 }
 
 app.get("/", (req, res) => {
