@@ -71,7 +71,7 @@ io.on("connection", (socket) => {
   socket.on("hit", (data) => {
     const t = players[data.targetId];
     if(!t) return;
-    t.hp -= 20;
+    t.hp -= 10;
     if(t.hp < 0) t.hp = 0;
     io.emit("playerHit", { id: data.targetId, hp: t.hp });
     if(t.hp <= 0){
@@ -124,6 +124,6 @@ function spawnDog(){
   io.emit("spawnDog", dogs[id]);
 }
 
-setInterval(spawnDog, 500);
+setInterval(spawnDog, 200);
 
 server.listen(process.env.PORT || 3000);

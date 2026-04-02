@@ -225,6 +225,25 @@ function createPlayer(data){
 
   group.add(label);
 
+  // HP 바 배경 (어두운 빨강)
+  const hpBgBar = new THREE.Mesh(
+    new THREE.PlaneGeometry(2, 0.3),
+    new THREE.MeshBasicMaterial({ color: 0x550000 })
+  );
+  hpBgBar.position.set(0, 6, 0);
+  group.add(hpBgBar);
+
+  // HP 바 전경 (초록)
+  const hpFillBar = new THREE.Mesh(
+    new THREE.PlaneGeometry(2, 0.3),
+    new THREE.MeshBasicMaterial({ color: 0x00ff44 })
+  );
+  hpFillBar.position.set(0, 6, 0.01);
+  group.add(hpFillBar);
+
+  group.userData.fillBar = hpFillBar;
+  group.userData.hp = 100;
+
   scene.add(group);
   otherPlayers[data.id] = group;
 }
@@ -373,9 +392,29 @@ socket.on("connect", () => {
 socket.on("playerDead",(data)=>{
 
   if(data.id === socket.id){
-    health = 100;
-    document.getElementById("health").innerText = "HP: 100";
-    camera.position.set(0,5,0);
+    health = 0;
+    document.getElementById("health").innerText = "HP: 0";
+
+    const deadUI = document.getElementById("deadUI");
+    if(deadUI) deadUI.style.display = "flex";
+    gameStarted = false;
+
+    clearTimeout(revivalTimer);
+    revivalTimer = setTimeout(()=>{
+      if(deadUI) deadUI.style.display = "none";
+      health = 100;
+      document.getElementById("health").innerText = "HP: 100";
+      camera.position.set(0,5,0);
+      gameStarted = true;
+    }, 3000);
+  }
+
+  // 죽은 플레이어 HP바 리셋
+  const p = otherPlayers[data.id];
+  if(p && p.userData.fillBar){
+    p.userData.hp = 100;
+    p.userData.fillBar.scale.x = 1;
+    p.userData.fillBar.position.x = 0;
   }
 
   if(data.killer === socket.id){
@@ -401,6 +440,15 @@ socket.on("playerHit",(data)=>{
     },100);
 
     shakeTime = 10;
+  } else {
+    // 다른 플레이어 HP바 업데이트
+    const p = otherPlayers[data.id];
+    if(p && p.userData.fillBar){
+      p.userData.hp = data.hp;
+      const ratio = Math.max(0, data.hp / 100);
+      p.userData.fillBar.scale.x = ratio;
+      p.userData.fillBar.position.x = ratio - 1;
+    }
   }
 });
 
