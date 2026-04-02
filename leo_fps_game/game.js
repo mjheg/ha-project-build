@@ -523,12 +523,6 @@ let lastFireTime = 0;
 const AUTO_INTERVAL = 55; // ms — Micro Uzi ~1100 RPM
 let fireModeTimer = null;
 
-// 반동
-let recoilPitch = 0;  // 수직 (위로 올라감)
-let recoilYaw = 0;    // 수평 (좌우 흔들림)
-const RECOIL_KICK     = 0.03;  // 발사 시 반동 크기
-const RECOIL_MAX      = 0.18;  // 최대 누적 반동
-const RECOIL_RECOVERY = 0.12;  // 프레임당 회복 속도 (lerp 계수)
 
 function showFireMode(){
   const el = document.getElementById("fireModeMsg");
@@ -543,9 +537,8 @@ function fireGun(){
   gunSound.currentTime = 0;
   gunSound.play().catch(() => {});
 
-  // 반동 누적 (위로 + 랜덤 좌우)
-  recoilPitch = Math.min(recoilPitch + RECOIL_KICK, RECOIL_MAX);
-  recoilYaw += (Math.random() - 0.5) * 0.012;
+  camera.rotation.x -= 0.05;
+  setTimeout(()=>camera.rotation.x += 0.05, 100);
 
   const dir = new THREE.Vector3();
   camera.getWorldDirection(dir);
@@ -638,14 +631,6 @@ function animate(){
 
   
   const now = Date.now();
-
-  // 반동 카메라 적용 + 부드러운 복귀
-  camera.rotation.x -= recoilPitch;
-  camera.rotation.y -= recoilYaw;
-  recoilPitch *= (1 - RECOIL_RECOVERY);
-  recoilYaw   *= (1 - RECOIL_RECOVERY);
-  camera.rotation.x += recoilPitch;
-  camera.rotation.y += recoilYaw;
 
   // 연사 모드
   if(isAutoFire && mouseHeld && now - lastFireTime >= AUTO_INTERVAL){
