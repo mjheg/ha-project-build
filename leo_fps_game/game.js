@@ -497,6 +497,11 @@ document.addEventListener("keydown",(e)=>{
     velocityY = 0.3;
     isJumping = true;
   }
+
+  if(key==="v" || key==="ㅍ"){
+    isAutoFire = !isAutoFire;
+    showFireMode();
+  }
 });
 
 document.addEventListener("keyup",(e)=>{
@@ -510,20 +515,30 @@ document.addEventListener("keyup",(e)=>{
 });
 
 // =======================
-// 총
+// 연사 / 단발 모드
 // =======================
-document.addEventListener("mousedown",()=>{
+let isAutoFire = false;
+let mouseHeld = false;
+let lastFireTime = 0;
+const AUTO_INTERVAL = 55; // ms — Micro Uzi ~1100 RPM
+let fireModeTimer = null;
 
-  if(!gameStarted) return;
+function showFireMode(){
+  const el = document.getElementById("fireModeMsg");
+  if(!el) return;
+  el.innerText = isAutoFire ? "연사" : "단발";
+  el.style.opacity = 1;
+  clearTimeout(fireModeTimer);
+  fireModeTimer = setTimeout(() => { el.style.opacity = 0; }, 1500);
+}
 
+function fireGun(){
   gunSound.currentTime = 0;
   gunSound.play().catch(() => {});
 
-  // 반동 애니메이션
   camera.rotation.x -= 0.05;
   setTimeout(()=>camera.rotation.x += 0.05, 100);
 
-  // 발사체 생성
   const dir = new THREE.Vector3();
   camera.getWorldDirection(dir);
 
@@ -536,6 +551,17 @@ document.addEventListener("mousedown",()=>{
     velocity: dir.clone().multiplyScalar(2),
     dist: 0
   });
+}
+
+document.addEventListener("mousedown",()=>{
+  if(!gameStarted) return;
+  mouseHeld = true;
+  fireGun();
+  lastFireTime = Date.now();
+});
+
+document.addEventListener("mouseup",()=>{
+  mouseHeld = false;
 });
 
 let lastSend = 0;
@@ -604,6 +630,12 @@ function animate(){
 
   
   const now = Date.now();
+
+  // 연사 모드
+  if(isAutoFire && mouseHeld && now - lastFireTime >= AUTO_INTERVAL){
+    fireGun();
+    lastFireTime = now;
+  }
 
   if(now - lastSend > 50){
     socket.emit("move",{
