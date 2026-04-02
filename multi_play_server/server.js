@@ -33,8 +33,8 @@ function handleDogKill(dogId){
 
   totalKills++;
 
-  if(totalKills >= 30 && dogScale < 2.0)  dogScale = 2.0;
-  if(totalKills >= 90 && dogSpeed < 2.5)  dogSpeed = 2.5;
+  if(totalKills >= 30 && dogScale < 3.0)  dogScale = 3.0;
+  if(totalKills >= 90 && dogSpeed < 4.0)  dogSpeed = 4.0;
   if(totalKills >= 160)  gameCleared = true;
 
   io.emit("gameState", getGameState());
