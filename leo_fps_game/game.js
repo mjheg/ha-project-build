@@ -480,25 +480,27 @@ socket.on("playerHit",(data)=>{
 });
 
 // =======================
-// 이동 + 점프 (한글 대응)
+// 이동 + 점프
 // =======================
-const move = {w:false,s:false,a:false,d:false};
+const move = {w:false,s:false,a:false,d:false,shift:false};
 
 document.addEventListener("keydown",(e)=>{
 
-  const key = e.key.toLowerCase();
+  // e.code 사용 — 물리 키 기준이라 한글/Shift 여부와 무관하게 항상 동일
+  const code = e.code;
 
-  if(key==="w" || key==="ㅈ") move.w=true;
-  if(key==="s" || key==="ㄴ") move.s=true;
-  if(key==="a" || key==="ㅁ") move.a=true;
-  if(key==="d" || key==="ㅇ") move.d=true;
+  if(code==="KeyW") move.w=true;
+  if(code==="KeyS") move.s=true;
+  if(code==="KeyA") move.a=true;
+  if(code==="KeyD") move.d=true;
+  if(code==="ShiftLeft" || code==="ShiftRight") move.shift=true;
 
-  if(e.key===" " && !isJumping){
+  if(code==="Space" && !isJumping){
     velocityY = 0.3;
     isJumping = true;
   }
 
-  if(key==="v" || key==="ㅍ"){
+  if(code==="KeyV"){
     isAutoFire = !isAutoFire;
     showFireMode();
   }
@@ -506,12 +508,13 @@ document.addEventListener("keydown",(e)=>{
 
 document.addEventListener("keyup",(e)=>{
 
-  const key = e.key.toLowerCase();
+  const code = e.code;
 
-  if(key==="w" || key==="ㅈ") move.w=false;
-  if(key==="s" || key==="ㄴ") move.s=false;
-  if(key==="a" || key==="ㅁ") move.a=false;
-  if(key==="d" || key==="ㅇ") move.d=false;
+  if(code==="KeyW") move.w=false;
+  if(code==="KeyS") move.s=false;
+  if(code==="KeyA") move.a=false;
+  if(code==="KeyD") move.d=false;
+  if(code==="ShiftLeft" || code==="ShiftRight") move.shift=false;
 });
 
 // =======================
@@ -581,10 +584,11 @@ function animate(){
 
   const prevX = camera.position.x;
   const prevZ = camera.position.z;
-  if(move.w) controls.moveForward(0.2);
-  if(move.s) controls.moveForward(-0.2);
-  if(move.a) controls.moveRight(-0.2);
-  if(move.d) controls.moveRight(0.2);
+  const spd = move.shift ? 0.6 : 0.2; // Shift: 3배 스프린트
+  if(move.w) controls.moveForward(spd);
+  if(move.s) controls.moveForward(-spd);
+  if(move.a) controls.moveRight(-spd);
+  if(move.d) controls.moveRight(spd);
 
   // 플레이어 벽 충돌 (AABB)
   const playerSphere = new THREE.Sphere(camera.position.clone(), 1);
