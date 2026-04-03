@@ -1,0 +1,347 @@
+/* =========================
+   기본 설정
+========================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  overflow: hidden;
+  background: black;
+  font-family: Arial, sans-serif;
+}
+
+/* =========================
+   🎯 십자선 (프리미엄 느낌)
+========================= */
+#crosshair {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* 십자선 라인 */
+#crosshair::before,
+#crosshair::after {
+  content: '';
+  position: absolute;
+  background: white;
+  border-radius: 1px;
+  box-shadow: 0 0 6px rgba(255,255,255,0.9);
+}
+
+#crosshair::before {
+  left: 0;
+  top: 11px;
+  width: 24px;
+  height: 2px;
+}
+
+#crosshair::after {
+  top: 0;
+  left: 11px;
+  width: 2px;
+  height: 24px;
+}
+
+/* 중앙 점 */
+#crosshair .dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  background: white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 8px rgba(255,255,255,1);
+}
+
+/* =========================
+   💥 히트마커
+========================= */
+#hitmarker {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 20;
+  transition: opacity 0.1s ease;
+}
+
+#hitmarker::before,
+#hitmarker::after {
+  content: '';
+  position: absolute;
+  background: white;
+}
+
+#hitmarker::before {
+  width: 20px;
+  height: 2px;
+  top: 9px;
+}
+
+#hitmarker::after {
+  width: 2px;
+  height: 20px;
+  left: 9px;
+}
+
+/* =========================
+   🎯 점수 / 체력
+========================= */
+#score {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  color: white;
+  font-size: 20px;
+  z-index: 10;
+}
+
+#health {
+  position: fixed;
+  top: 50px;
+  left: 20px;
+  color: #ff4d4d;
+  font-size: 20px;
+  z-index: 10;
+}
+
+/* =========================
+   💀 게임 오버
+========================= */
+#gameOverUI {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.9);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  z-index: 100;
+}
+
+#gameOverText {
+  font-size: 56px;
+  color: red;
+  margin-bottom: 20px;
+  letter-spacing: 2px;
+}
+
+#restartBtn {
+  padding: 12px 30px;
+  font-size: 18px;
+  border: none;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+#restartBtn:hover {
+  background: #ddd;
+  transform: scale(1.05);
+}
+
+/* =========================
+   🔥 닉네임 UI (게임 느낌)
+========================= */
+#nicknameUI {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.nickname-box {
+  background: #111;
+  padding: 30px;
+  border-radius: 12px;
+  text-align: center;
+  color: white;
+  width: 260px;
+  box-shadow: 0 0 20px rgba(255,255,255,0.1);
+}
+
+.nickname-box h2 {
+  margin-bottom: 15px;
+}
+
+.nickname-box input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.nickname-box button {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+  background: #4CAF50;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+#hitmarker{
+  transition: opacity 0.1s;
+}
+
+.nickname-box button:hover {
+  background: #45a049;
+  transform: scale(1.03);
+}
+
+/* 🔥 닉네임 박스 위치 위로 */
+.nickname-box {
+  transform: translateY(-60px);
+}
+
+/* 🔥 캐릭터 선택 영역 */
+#characterSelect {
+  margin-top: 20px;
+}
+
+.character-list {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.character-list button {
+  width: 60px;
+  height: 60px;
+  font-size: 24px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background: #333;
+  color: white;
+}
+
+/* 선택된 캐릭터 강조 */
+.character-list button.active {
+  border: 3px solid #4CAF50;
+}
+
+/* 🔥 추가 (박스 크기 문제 해결) */
+.nickname-box {
+  width: 320px;
+  min-height: 380px;
+}
+
+#deadUI{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.7);
+  backdrop-filter:blur(10px);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  color:red;
+  font-size:80px;
+  z-index:9999;
+}
+
+/* 총 킬 카운터 */
+#totalKills {
+  position: fixed;
+  top: 80px;
+  left: 20px;
+  color: #ffcc00;
+  font-size: 18px;
+  z-index: 10;
+}
+
+/* 에스컬레이션 알림 */
+#escalationMsg {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -120px);
+  color: #ff4400;
+  font-size: 32px;
+  font-weight: bold;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 50;
+  text-shadow: 0 0 10px rgba(255,68,0,0.8);
+  transition: opacity 0.3s ease;
+}
+
+/* 클리어 UI */
+#clearUI {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.clear-content {
+  text-align: center;
+}
+
+.clear-title {
+  font-size: 80px;
+  color: #ffcc00;
+  text-shadow: 0 0 30px rgba(255,204,0,0.8);
+  margin-bottom: 20px;
+}
+
+.clear-sub {
+  font-size: 28px;
+  color: white;
+}
+#fireModeMsg {
+  position: fixed;
+  top: 52%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-size: 14px;
+  font-family: monospace;
+  background: rgba(0,0,0,0.45);
+  padding: 3px 10px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  z-index: 100;
+}

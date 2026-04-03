@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+ <!-- 기본 SEO -->                                                                                                                                                
+  <meta name="description" content="쫗아 오는 강아지를 총으로 쏴서 도망가게 하는 3" />                                                                                                 
+  <meta name="keywords" content="게임, FPS, 플랫포머" />                                                                                                           
+  <link rel="canonical" href="https://leofps.vercel.app/" />                                                                                                     
+                                                                                                                                                                   
+  <!-- Open Graph (카카오/트위터/페이스북 공유 시 미리보기) -->                                                                                                    
+  <meta property="og:title" content="leofps" />                                                                                                                 
+  <meta property="og:description" content="쫗아 오는 강아지를 총으로 쏴서 도망가게 하는 3" />                                                                                                 
+  <!--<meta property="og:image" content="https://your-domain.com/thumbnail.png" />   -->                                                                                
+  <meta property="og:url" content="https://leofps.vercel.app/" />                                                                                                     
+  <meta property="og:type" content="website" />   
+<title>FPS Game</title>
+
+<script type="importmap">
+  
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
+
+<!-- 🔥 CSS 연결 -->
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<div id="deadUI">DEAD</div>
+
+
+<!-- 🔥 닉네임 + 캐릭터 선택 -->
+<div id="nicknameUI">
+  <div class="nickname-box">
+
+    <h2>Enter your name</h2>
+
+    <input id="nicknameInput" placeholder="Your name" />
+
+    <div id="characterSelect">
+      <p>Select Character</p>
+
+      <div class="character-list">
+        <button data-type="1">1</button>
+        <button data-type="2">2</button>
+        <button data-type="3">3</button>
+      </div>
+    </div>
+
+    <button id="startBtn">START</button>
+
+  </div>
+</div>
+
+<!-- UI -->
+<div id="crosshair"></div>
+<div id="hitmarker"></div>
+<div id="score">Kills: 0</div>
+<div id="health">HP: 100</div>
+<div id="totalKills">총 킬: 0 / 160</div>
+<div id="escalationMsg"></div>
+<div id="fireModeMsg"></div>
+
+<div id="clearUI">
+  <div class="clear-content">
+    <div class="clear-title">🎉 CLEAR!</div>
+    <div class="clear-sub">160마리 처치 완료</div>
+  </div>
+</div>
+
+<script type="module">
+import './game.js';
+</script>
+
+</body>
+</html>
